@@ -34,7 +34,7 @@ live once here (in `docs/verification.md`) and are never duplicated in ship.
 ## Install
 
 ```bash
-claude plugin marketplace add ddalgrande/claude-plugins
+claude plugin marketplace add ddalgrande/agent-plugins
 claude plugin install feedback-loops@ddalgrande-plugins
 ```
 

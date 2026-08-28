@@ -1,4 +1,4 @@
-# claude-plugins
+# agent-plugins
 
 Daniele Dal Grande's Claude Code plugin marketplace.
 
@@ -39,7 +39,7 @@ you resolve a conflict), the old green is stale, so `/ship` re-runs Layer 1 via
 ## Install
 
 ```bash
-claude plugin marketplace add ddalgrande/claude-plugins
+claude plugin marketplace add ddalgrande/agent-plugins
 claude plugin install feedback-loops@ddalgrande-plugins
 claude plugin install ship@ddalgrande-plugins
 ```
@@ -47,7 +47,7 @@ claude plugin install ship@ddalgrande-plugins
 Or from a local clone:
 
 ```bash
-claude plugin marketplace add /path/to/claude-plugins
+claude plugin marketplace add /path/to/agent-plugins
 claude plugin install feedback-loops@ddalgrande-plugins
 claude plugin install ship@ddalgrande-plugins
 ```

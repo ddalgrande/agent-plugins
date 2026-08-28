@@ -81,7 +81,7 @@ missing execute bit on the script does not matter.
 ## Install
 
 ```bash
-claude plugin marketplace add ddalgrande/claude-plugins
+claude plugin marketplace add ddalgrande/agent-plugins
 claude plugin install ship@ddalgrande-plugins
 ```
 

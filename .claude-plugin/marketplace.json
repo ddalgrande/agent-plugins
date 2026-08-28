@@ -26,7 +26,7 @@
         "workflow"
       ],
       "category": "workflow",
-      "repository": "https://github.com/ddalgrande/claude-plugins"
+      "repository": "https://github.com/ddalgrande/agent-plugins"
     },
     {
       "name": "ship",
@@ -47,7 +47,7 @@
         "workflow"
       ],
       "category": "workflow",
-      "repository": "https://github.com/ddalgrande/claude-plugins"
+      "repository": "https://github.com/ddalgrande/agent-plugins"
     }
   ]
 }
