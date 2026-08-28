@@ -80,6 +80,8 @@ missing execute bit on the script does not matter.
 
 ## Install
 
+Claude Code — gets the skill **and** the `ship-gate` Stop hook:
+
 ```bash
 claude plugin marketplace add ddalgrande/agent-plugins
 claude plugin install ship@ddalgrande-plugins
@@ -90,6 +92,12 @@ Pairs with `feedback-loops`:
 ```bash
 claude plugin install feedback-loops@ddalgrande-plugins
 ```
+
+Codex, Kimi, or any other [Agent Skills](https://agentskills.io) agent — run
+`./install.sh` from a clone of this repo to put the skill in
+`~/.agents/skills/`. The delivery loop works in full there; only the Stop-hook
+gate below is Claude-specific, since hooks have no cross-agent equivalent. See
+the [root README](../../README.md#install) for details.
 
 > **Migrating from `ship@ship-tools`?** Uninstall the old plugin first
 > (`claude plugin uninstall ship@ship-tools`) — otherwise both register a `Stop`
