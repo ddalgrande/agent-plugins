@@ -48,9 +48,11 @@ against the new one. A clean rebase that fast-forwards nothing new does not need
 a re-run. On conflicts, resolve them, `git rebase --continue`, then re-verify.
 
 ### 4. Pre-merge review (separate agent)
-Run `/code-review` (Layer 3) for a fresh-context second pair of eyes before the
-change goes up. Address findings, and if you changed code in response, loop back
-to step 1 (re-verify) — a review fix is a change like any other.
+Get a fresh-context second pair of eyes (Layer 3) before the change goes up.
+Run your agent's review command — `/code-review` in Claude Code, or the
+equivalent elsewhere — and if it has none, dispatch a subagent with a clean
+context and the diff. Address findings, and if you changed code in response,
+loop back to step 1 (re-verify) — a review fix is a change like any other.
 
 ### 5. Push
 ```
@@ -80,11 +82,15 @@ resolve a thread you only partially addressed, and don't resolve someone else's
 thread without a reply. Delivery isn't done until every thread is either
 resolved or has an explicit, unresolved reason it can't be.
 
-## The Stop-hook gate (optional, opt-in)
+## The Stop-hook gate (optional, opt-in, Claude Code only)
 This plugin also ships a `Stop` hook (`hooks/ship-gate.sh`) that enforces the
 *delivery* half deterministically: it refuses to let the session declare done
 while the tree is dirty, work is stranded on a protected branch, the branch is
 unpushed, or (when `gh` is available) the PR is red, conflicted, or unreviewed.
+
+Hooks are a Claude Code mechanism with no cross-agent equivalent, so this
+section applies only there. On other agents the steps above still work in full
+— you just get the skill's discipline without the deterministic backstop.
 
 - **Opt-in:** it does nothing unless `.claude/ship.config.json` exists in the repo.
 - **Delivery only:** it runs **no** lint/tests/build — it never duplicates
