@@ -19,7 +19,7 @@ Usage:
 
 Targets:
   agents              ~/.agents/skills        (default)
-                      Read by Codex, Kimi, and any agent following the
+                      Read by Codex, Kimi, pi, and any agent following the
                       Agent Skills standard. One install covers them all.
   claude              ~/.claude/skills
                       For Claude Code without the plugin marketplace. Prefer
@@ -127,5 +127,6 @@ Done. Restart your agent (or open a new session) so it rescans for skills.
 
   Codex   \$skill-name, or it picks the skill up on its own
   Kimi    /skill:skill-name
+  pi      /skill:skill-name, or it picks the skill up on its own
   Claude  /skill-name
 EOF

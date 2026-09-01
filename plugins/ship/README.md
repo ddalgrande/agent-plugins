@@ -93,7 +93,7 @@ Pairs with `feedback-loops`:
 claude plugin install feedback-loops@ddalgrande-plugins
 ```
 
-Codex, Kimi, or any other [Agent Skills](https://agentskills.io) agent — run
+Codex, Kimi, pi, or any other [Agent Skills](https://agentskills.io) agent — run
 `./install.sh` from a clone of this repo to put the skill in
 `~/.agents/skills/`. The delivery loop works in full there; only the Stop-hook
 gate below is Claude-specific, since hooks have no cross-agent equivalent. See

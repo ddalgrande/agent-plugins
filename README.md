@@ -3,10 +3,10 @@
 Agent skills for making a coding agent verify its own work and deliver it.
 
 Written to the [Agent Skills standard](https://agentskills.io) (`SKILL.md`), so
-the same skills run in **Claude Code, OpenAI Codex, Kimi**, and the [30+ other
-tools](https://agents.md) that read the format — and with **GLM**, **Kimi K2**,
-or any other model, since the skills live in the harness, not the model. There
-is one copy of each skill; nothing is forked per agent.
+the same skills run in **Claude Code, OpenAI Codex, Kimi, [pi](https://github.com/earendil-works/pi)**,
+and the [30+ other tools](https://agents.md) that read the format — and with
+**GLM**, **Kimi K2**, or any other model, since the skills live in the harness,
+not the model. There is one copy of each skill; nothing is forked per agent.
 
 ## Plugins
 
@@ -56,7 +56,7 @@ claude plugin install ship@ddalgrande-plugins
 
 Or from a local clone: `claude plugin marketplace add /path/to/agent-plugins`.
 
-### Codex, Kimi, and other SKILL.md agents
+### Codex, Kimi, pi, and other SKILL.md agents
 
 ```bash
 git clone https://github.com/ddalgrande/agent-plugins
@@ -65,7 +65,7 @@ cd agent-plugins
 ```
 
 That symlinks every skill into `~/.agents/skills/` — the shared discovery
-directory Codex and Kimi both read — so one install covers them, and
+directory Codex, Kimi, and pi all read — so one install covers them, and
 `git pull` updates them in place. Then restart the agent:
 
 | Agent | Invoke | Reads |
@@ -73,6 +73,7 @@ directory Codex and Kimi both read — so one install covers them, and
 | Claude Code | `/green-loop` | plugin, or `~/.claude/skills/` |
 | Codex | `$green-loop`, or picked up automatically | `~/.agents/skills/` |
 | Kimi | `/skill:green-loop` | `~/.agents/skills/` |
+| pi | `/skill:green-loop`, or picked up automatically | `~/.agents/skills/` |
 
 Other options:
 
@@ -96,7 +97,7 @@ Nothing here is model-specific.
 
 ### What's portable, and what isn't
 
-| Piece | Claude Code | Codex / Kimi / others |
+| Piece | Claude Code | Codex / Kimi / pi / others |
 |---|---|---|
 | The three skills | ✅ | ✅ |
 | `docs/verification.md` contract | ✅ | ✅ — plain Markdown |
