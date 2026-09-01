@@ -39,7 +39,7 @@ Unit tests passing ≠ the feature works. If the change is user-facing, run the 
 Use whichever MCP/tool the environment has (preference order in the recipes file); save artifacts to a temp dir, not the repo. If a leg can't run here (no device, external dependency), say so explicitly and list what the user must verify manually — don't silently claim it works.
 
 ## 4. Layer 3 — pre-merge review (before PR/merge)
-When the change is headed for a PR or merge, get a **second pair of eyes from a separate agent**: run whatever review command your agent provides (`/code-review` or `/review` in Claude Code, `$code-review` in Codex, `/skill:code-review` in Kimi), or failing that dispatch a subagent with a fresh context and the diff. What matters is that the reviewer did **not** write the code — a fresh-context reviewer catches what the author-context agent rationalized past. Address findings, then re-run Layer 1.
+When the change is headed for a PR or merge, get a **second pair of eyes from a separate agent**: run whatever review command your agent provides (`/code-review` or `/review` in Claude Code, `$code-review` in Codex, `/skill:code-review` in Kimi or pi), or failing that dispatch a subagent with a fresh context and the diff. What matters is that the reviewer did **not** write the code — a fresh-context reviewer catches what the author-context agent rationalized past. Address findings, then re-run Layer 1.
 
 > Layer 3 review is part of *delivery*. If the `ship` plugin is installed, this step is folded into `/ship` (see step 6) — don't run it twice.
 

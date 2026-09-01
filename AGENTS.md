@@ -11,7 +11,7 @@ A collection of agent skills, distributed two ways from one source of truth:
 - as **Claude Code plugins** (`plugins/*/` with `.claude-plugin/plugin.json`,
   listed in `.claude-plugin/marketplace.json`)
 - as **portable Agent Skills** (`SKILL.md`) installable into `.agents/skills/`
-  for Codex, Kimi, and any other agent following the
+  for Codex, Kimi, pi, and any other agent following the
   [Agent Skills standard](https://agentskills.io), via `./install.sh`
 
 There is exactly one copy of each skill, at

@@ -40,7 +40,7 @@ claude plugin marketplace add ddalgrande/agent-plugins
 claude plugin install feedback-loops@ddalgrande-plugins
 ```
 
-Codex, Kimi, or any other [Agent Skills](https://agentskills.io) agent — run
+Codex, Kimi, pi, or any other [Agent Skills](https://agentskills.io) agent — run
 `./install.sh` from a clone of this repo to put both skills in
 `~/.agents/skills/`. Both are portable; nothing in this plugin is
 Claude-specific. See the [root README](../../README.md#install) for details.
