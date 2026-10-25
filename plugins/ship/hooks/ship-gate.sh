@@ -20,6 +20,8 @@
 #                                            give up and fail open, so a genuinely
 #                                            stuck delivery never traps the session.
 #
+# Env: SHIP_GATE_SKIP_REVIEW=1 skips the review requirement (CI/conflict checks stay).
+#
 # Invoked as:  bash "${CLAUDE_PLUGIN_ROOT}/hooks/ship-gate.sh"
 # (so a missing execute bit does not matter).
 
@@ -212,7 +214,7 @@ GH=$(command -v gh 2>/dev/null || true)
 [ -z "$GH" ] && allow
 "$GH" auth status >/dev/null 2>&1 || allow
 
-pr=$("$GH" pr view --json state,mergeStateStatus,reviewRequests,reviewDecision,statusCheckRollup 2>/dev/null || true)
+pr=$("$GH" pr view --json state,number,isDraft,mergeStateStatus,reviewRequests,reviewDecision,statusCheckRollup 2>/dev/null || true)
 if [ -z "$pr" ]; then
   block "ship-gate: no pull request found for '$branch'. Open one before finishing (/ship does this)."
 fi
@@ -246,10 +248,48 @@ if [ "$merge_state" = "DIRTY" ] || [ "$merge_state" = "CONFLICTING" ]; then
 fi
 
 # 6. Review requested.
+#    Satisfied by ANY of: SHIP_GATE_SKIP_REVIEW=1, a draft PR, a review decision
+#    or requested reviewer, or a bot review (e.g. Codex, which lands as
+#    COMMENTED and never sets reviewDecision) with no unresolved threads.
+#    The last path is what makes the gate satisfiable on a solo repo.
 review_decision=$(printf '%s' "$pr" | json_stdin_get "reviewDecision")
 review_requests=$(printf '%s' "$pr" | json_stdin_get "reviewRequests")
-if [ -z "$review_decision" ] && { [ -z "$review_requests" ] || [ "$review_requests" = "[]" ]; }; then
-  block "ship-gate: PR for '$branch' has no review requested and no review decision yet. Request a review (/code-review, or a reviewer on the PR) before finishing."
+is_draft=$(printf '%s' "$pr" | json_stdin_get "isDraft")
+
+# True when a bot has reviewed and every review thread is resolved. Any
+# lookup failure returns false, so the original block message still applies.
+bot_reviewed_and_resolved() {
+  [ -n "$JQ" ] || return 1
+  local number slug owner name data bots unresolved
+  number=$(printf '%s' "$pr" | json_stdin_get "number")
+  slug=$("$GH" repo view --json owner,name -q '.owner.login + "/" + .name' 2>/dev/null) || return 1
+  owner=${slug%%/*}
+  name=${slug#*/}
+  case "$number" in ''|*[!0-9]*) return 1 ;; esac
+  [ -n "$owner" ] && [ -n "$name" ] || return 1
+  data=$("$GH" api graphql -F owner="$owner" -F name="$name" -F number="$number" -f query='
+    query($owner: String!, $name: String!, $number: Int!) {
+      repository(owner: $owner, name: $name) {
+        pullRequest(number: $number) {
+          reviews(first: 100) { nodes { author { __typename login } } }
+          reviewThreads(first: 100) { nodes { isResolved } }
+        }
+      }
+    }' 2>/dev/null) || return 1
+  bots=$(printf '%s' "$data" | "$JQ" -r \
+    '[.data.repository.pullRequest.reviews.nodes[]? | select(.author != null and (.author.__typename == "Bot" or (.author.login | endswith("[bot]"))))] | length' 2>/dev/null)
+  unresolved=$(printf '%s' "$data" | "$JQ" -r \
+    '[.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false)] | length' 2>/dev/null)
+  case "$bots" in ''|*[!0-9]*) return 1 ;; esac
+  case "$unresolved" in ''|*[!0-9]*) return 1 ;; esac
+  [ "$bots" -gt 0 ] && [ "$unresolved" -eq 0 ]
+}
+
+if [ "${SHIP_GATE_SKIP_REVIEW:-}" != "1" ] && [ "$is_draft" != "true" ] \
+  && [ -z "$review_decision" ] && { [ -z "$review_requests" ] || [ "$review_requests" = "[]" ]; }; then
+  if ! bot_reviewed_and_resolved; then
+    block "ship-gate: PR for '$branch' has no review requested, no review decision, and no bot review with all threads resolved. Request a review (/code-review, a reviewer on the PR, or a bot such as @codex review) and resolve its threads before finishing. Draft PRs and SHIP_GATE_SKIP_REVIEW=1 skip this check."
+  fi
 fi
 
 # Everything delivered.
