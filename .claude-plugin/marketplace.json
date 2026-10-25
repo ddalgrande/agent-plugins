@@ -32,7 +32,7 @@
       "name": "ship",
       "source": "./plugins/ship",
       "description": "Delivery loop: take a green change out the door \u2014 feature branch \u2192 rebase (re-verify when the base moved) \u2192 /code-review \u2192 push \u2192 PR \u2192 watch \u2014 with an opt-in, fail-open Stop-hook gate that enforces delivery state only (never runs your lint/tests).",
-      "version": "1.6.1",
+      "version": "1.6.2",
       "author": {
         "name": "Daniele Dal Grande"
       },
