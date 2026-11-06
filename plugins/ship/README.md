@@ -48,6 +48,17 @@ left silently open.
   `docs/verification.md`, or built-in defaults). Medium and high need a human
   reviewer; a bot review never fills that slot.
 
+## Stacked PRs
+
+When the user asks for a stack (each PR targets the branch below it), `ship`
+restacks with `git rebase --update-refs`, pushes with
+`--force-with-lease --force-if-includes`, reviews each PR on its own diff, and
+merges bottom up — retargeting the next PR to the base and dropping
+squash-merged parent commits with `git rebase --onto`. An agent review verdict
+survives a restack when the PR diff's `git patch-id --verbatim` is unchanged.
+Human approvals dismissed by the push are requested again, and Layer 1 still
+re-runs on any branch whose tree moved.
+
 ## The gate
 
 The `Stop` hook (`hooks/ship-gate.sh`) enforces the delivery half
