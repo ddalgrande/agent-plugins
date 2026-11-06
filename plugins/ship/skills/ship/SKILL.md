@@ -137,8 +137,9 @@ push.
 
 The review-round cap from step 4 also applies to reviews on the PR (an
 automated PR reviewer re-running on each push counts as a round). Answer
-reviewer findings by their tag the same way as in step 4. When the cap is
-reached, stop pushing fixes. Reply on each open thread that it waits on the
+reviewer findings by their tag the same way as in step 4. If the cap is
+reached and the reviewer still reports `Important` findings, stop pushing
+fixes (a clean review at the cap means the PR converged — carry on). Reply on each open thread that it waits on the
 user's decision, leave it unresolved, convert the PR to draft
 (`gh pr ready --undo`, or your host's equivalent), and ask the user. Never
 resolve a thread you did not fix just to finish.
