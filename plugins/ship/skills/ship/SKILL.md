@@ -166,7 +166,10 @@ rules change how:
   (`gh pr create --base <parent>`, or your host's equivalent).
 - **Rebase (step 3).** Restack the whole chain in one go from the top branch:
   `git switch <top> && git rebase --update-refs origin/<base>` (Git 2.38+;
-  it moves every branch in the stack). Without `--update-refs`, rebase bottom
+  it moves every branch in the stack). It does **not** move a branch that is
+  checked out in another worktree: check `git worktree list` first, and switch
+  that worktree off the branch or restack that branch with the fallback below.
+  Without `--update-refs`, rebase bottom
   up. Before you rebase a parent, record its tip
   (`old=$(git rev-parse <parent>)`). Then rebase each child onto its parent's
   new tip with `git rebase --onto <parent> "$old" <child>`. Do not compute the
@@ -202,13 +205,19 @@ rules change how:
   1. Retarget the next PR to the base (`gh pr edit <n> --base <base>`) before
      anyone deletes the merged branch. On some hosts, deleting a PR's base
      branch closes the PR.
-  2. If the bottom PR was squash- or rebase-merged, the child still carries
-     the parent's original commits. Drop them with
-     `git rebase --onto origin/<base> <old-parent-tip> <child>`, where
-     `<old-parent-tip>` is the parent commit the child is built on. Record it
-     before the merge (`git rev-parse <parent>`, with the child up to date on
-     the parent).
-  3. Re-run Layer 1 on the child, then push it with
+  2. Fetch the merge (`git fetch origin`). Until you do, `origin/<base>` does
+     not contain it, and a rebase onto it drops the merged work from the
+     child.
+  3. If the bottom PR was squash- or rebase-merged, the rest of the stack
+     still carries the parent's original commits. Drop them and restack every
+     remaining branch in one go, from the top branch:
+     `git switch <top> && git rebase --update-refs --onto origin/<base> <old-parent-tip>`,
+     where `<old-parent-tip>` is the merged parent's commit that the child is
+     built on. Record it before the merge (`git rev-parse <parent>`, with the
+     child up to date on the parent). Rebasing only the child leaves the
+     branches above it on the old history. The worktree caveat from the
+     rebase rule applies here too.
+  4. Re-run Layer 1 on each rewritten branch, then push each one with
      `--force-with-lease --force-if-includes`.
 
 The Stop-hook gate below checks only the current branch. It does not know about
