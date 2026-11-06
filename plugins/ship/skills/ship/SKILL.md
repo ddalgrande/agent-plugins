@@ -54,8 +54,9 @@ equivalent elsewhere — and if it has none, dispatch a subagent with a clean
 context and the diff. Address findings, and if you changed code in response,
 loop back to step 1 (re-verify) — a review fix is a change like any other.
 
-**Ask for findings you can act on.** Tell the reviewer (or brief the subagent)
-to:
+**Ask for findings you can act on.** Give the reviewer the repo's review
+guidance (`REVIEW.md`, if it exists) with the diff, and tell it (or brief the
+subagent) to:
 - tag each finding `Important`, `Nit`, or `Pre-existing` (a bug this diff did
   not introduce — record it, do not block this PR on it);
 - give file and line evidence for each finding, and a command or test that
