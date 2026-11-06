@@ -54,6 +54,36 @@ equivalent elsewhere — and if it has none, dispatch a subagent with a clean
 context and the diff. Address findings, and if you changed code in response,
 loop back to step 1 (re-verify) — a review fix is a change like any other.
 
+**Ask for findings you can act on.** Tell the reviewer (or brief the subagent)
+to:
+- tag each finding `Important`, `Nit`, or `Pre-existing` (a bug this diff did
+  not introduce — record it, do not block this PR on it);
+- give file and line evidence for each finding, and a command or test that
+  shows the failure where one can be run — drop findings it cannot point at;
+- drop findings that are only about style or naming;
+- start its summary with the finding count, and say plainly when nothing needs
+  fixing.
+
+Fix every `Important` finding, or answer it with a short reason it is wrong or
+intended. When a finding names a class of bug, fix every instance of that class
+in the diff, not only the line the reviewer cited.
+
+**Cap the review rounds.** One round = one review plus the fixes for it. Read
+the cap from the Layer 3 section of `docs/verification.md`
+(`max review rounds`); if it does not state one, use **3**.
+- After round 1, re-review **only the new diff** since the last review, not the
+  whole branch, and do not re-raise findings already answered.
+- If the cap is reached and the reviewer still reports `Important` findings,
+  **stop the loop.** Do not start another round. Tell the user the remaining
+  findings and ask whether the approach itself is wrong. An author agent and a
+  reviewer agent can otherwise loop without converging.
+
+**When the same finding comes back.** If a reviewer flags the same kind of
+problem that an earlier review or PR already flagged, propose moving the lesson
+into structure — a lint rule, a test, a `docs/verification.md` check, or a line
+in the repo's review guidance (e.g. `REVIEW.md`) — so the next change cannot
+repeat it. Do not make that change in this PR unless the user agrees.
+
 ### 5. Push
 ```
 git push -u origin <branch>
@@ -62,9 +92,41 @@ git push -u origin <branch>
 ### 6. Open the PR
 Open a PR into the base branch. Use the repo's PR template if one exists
 (`.github/pull_request_template.md` and the usual locations); fill its sections
-from the actual diff. Write a body that states what changed and how it was
-verified. Do not open a PR unless delivery is the user's intent (they asked to
-ship / open a PR).
+from the actual diff. Do not open a PR unless delivery is the user's intent
+(they asked to ship / open a PR).
+
+Whether or not a template exists, the body must contain these sections. Add
+any the template lacks:
+- **Testing** — evidence first: each command that ran and the decisive lines of
+  its real output (or a screenshot / recording path), then one line of prose.
+  Never a bare "tests pass".
+- **Not proven** — what these checks do not show (e.g. "no device run",
+  "tests cover the happy path only", "Layer 2 skipped: no simulator"). Write
+  "nothing known" only if that is true. A reviewer who cannot see what the
+  checks missed should do a full review, not a quick approval.
+- **Risk** — the risk tier and why (see below).
+- **How to revert** — the exact undo: revert the merge commit, turn off a named
+  flag, or the manual steps if a revert is not enough (migrations, data
+  changes, released builds).
+
+**Risk tier — set by the change, not by the author.** If the Layer 3 section of
+`docs/verification.md` defines risk tiers (path patterns mapped to how many
+human approvals they need), match the changed paths against them. Each changed
+path takes the highest tier whose pattern it matches; a path that matches no
+pattern is medium. The change's tier is the highest tier among its paths, so a
+change is low only if every path is low. Without tiers, use these defaults:
+- **low** — docs, copy, comments, tests only, or additive behind a flag that is
+  off: automated review and green CI are enough. Agent instruction files
+  (`AGENTS.md`, `CLAUDE.md`, `SKILL.md`, review guidance) are not low.
+- **medium** — ordinary product code: one human approval.
+- **high** — auth, payments/billing, security, data migrations, release or
+  install scripts, and any CI workflow file (`.github/workflows/*`): one human
+  approval at least, two if the repo has a second maintainer.
+
+State the tier in the **Risk** section. For medium and high, request a human
+reviewer. An approval or review from a bot or agent never fills a slot that
+needs a human, and the person who asked for an agent-written change counts as
+its human reviewer only if they actually reviewed it.
 
 ### 7. Watch to green
 After the PR is up, keep an eye on CI and reviews until it is mergeable
@@ -72,6 +134,14 @@ After the PR is up, keep an eye on CI and reviews until it is mergeable
 PR is not delivered. On CI failure: re-diagnose, fix (via `green-loop`), push,
 let CI re-run. On merge conflict: rebase (step 3, which re-triggers re-verify),
 push.
+
+The review-round cap from step 4 also applies to reviews on the PR (an
+automated PR reviewer re-running on each push counts as a round). Answer
+reviewer findings by their tag the same way as in step 4. When the cap is
+reached, stop pushing fixes. Reply on each open thread that it waits on the
+user's decision, leave it unresolved, convert the PR to draft
+(`gh pr ready --undo`, or your host's equivalent), and ask the user. Never
+resolve a thread you did not fix just to finish.
 
 **Close review threads visibly — pushing the fix isn't enough.** For each
 review comment you address, *reply on that thread* saying what you changed (and
@@ -98,6 +168,10 @@ section applies only there. On other agents the steps above still work in full
 - **Fails open:** missing config, no `jq`/`python3`, no `gh`, or detached HEAD →
   it allows the stop. It also gives up after `gate.max_blocks` consecutive
   blocks so a genuinely stuck delivery never traps the session.
+- **Cannot see risk tiers:** its review check passes on a bot review with all
+  threads resolved. That does **not** meet the human-approval rule for medium
+  and high changes (step 6) — request the human reviewer anyway. A draft PR
+  skips the review check, which is how the round-cap stop (step 7) passes it.
 
 Minimal config:
 
@@ -109,8 +183,9 @@ Set `"enabled": false` to turn it off without deleting the file.
 
 ## Report
 End with the delivery state the user can trust: branch, base it was rebased on,
-whether a re-verify ran (and why), review outcome, push status, and the PR URL +
-its CI state. Say plainly if anything is still red or needs manual follow-up.
+whether a re-verify ran (and why), review outcome (rounds used of the cap, and
+open findings by tag), risk tier, push status, and the PR URL + its CI state.
+Say plainly if anything is still red or needs manual follow-up.
 
 ## Composition
 - **feedback-loops → ship.** After `green-loop` reports green, hand off to

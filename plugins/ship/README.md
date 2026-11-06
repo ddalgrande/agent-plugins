@@ -33,6 +33,21 @@ the review loop is visibly closed — the commit closes the code, the reply +
 resolved thread closes the conversation. Delivery isn't done while a thread is
 left silently open.
 
+## Review rounds, findings, and risk
+
+- **Findings are tagged** `Important` / `Nit` / `Pre-existing`, need file:line
+  evidence, and style-only findings are dropped. Every `Important` is fixed or
+  answered with a reason.
+- **Rounds are capped** — `max review rounds` in `docs/verification.md`
+  Layer 3, default 3. After round 1 only the new diff is re-reviewed. At the
+  cap, `ship` stops and asks whether the approach is wrong, so an agent author
+  and an agent reviewer cannot loop forever.
+- **The PR body** always has **Testing** (commands + real output),
+  **Not proven**, **Risk**, and **How to revert**.
+- **Risk tier comes from the changed paths**, not the author (tiers in
+  `docs/verification.md`, or built-in defaults). Medium and high need a human
+  reviewer; a bot review never fills that slot.
+
 ## The gate
 
 The `Stop` hook (`hooks/ship-gate.sh`) enforces the delivery half

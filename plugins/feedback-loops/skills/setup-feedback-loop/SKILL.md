@@ -76,6 +76,9 @@ Unit tests alone don't prove a feature works. Record how to drive the **running*
 - **CLI** → the invocation that exercises the changed path.
 - **Mobile** → simulator boot + launch command (screen-record the flow for visual changes).
 
+### 3b. Fill in the risk tiers
+Replace the `<...>` placeholders in the template's risk tiers with this repo's real paths: look for auth, payments/billing, secrets, database migrations, release/deploy/install scripts, and any path that CODEOWNERS or the instructions file marks as sensitive. CI workflow files are always **high**. Agent instruction files (`AGENTS.md`, `CLAUDE.md`, `**/SKILL.md`, review guidance such as `REVIEW.md`) are at least **medium** — they are instructions, not docs, so never put them under low. If nothing sensitive exists, keep only the `.github/workflows/**` line under high. Start strict — a path can move to a lower tier later, with evidence that the lower bar is safe.
+
 ### 4. Confirm, then write the doc
 Briefly show the user the detected checks and ask only if something is ambiguous (cheap confirmation beats a wrong loop). Create `docs/` if it doesn't exist, then write `docs/verification.md` using this template:
 
@@ -99,6 +102,14 @@ Run via the `green-loop` skill. Keep in sync with CI.
 
 ## Layer 3 — pre-merge review (before PR/merge)
 - separate-agent review: `/code-review` (or `/review`)
+- max review rounds: 3   (then stop and ask whether the approach is wrong)
+- risk tiers — set by the changed paths, not the author. Each changed path
+  takes the highest tier whose pattern it matches; a path that matches no
+  pattern is medium. The change's tier is the highest tier among its paths, so
+  a change is low only if every path is low.
+  - low  (automated review + green CI): `docs/**`, `README.md`, `<...>`
+  - medium (1 human approval): default — any path not matched by low or high
+  - high (human approval always; 2 where possible): `.github/workflows/**`, `<auth, payments, migrations, release scripts>`
 
 ## Definition of Done
 A change is **done** only when all of these hold — never off Layer 1 alone:
