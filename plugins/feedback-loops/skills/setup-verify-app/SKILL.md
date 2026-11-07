@@ -188,7 +188,10 @@ feature file from source and drive every feature live.
      harness, then drive it again live before you keep the fix.
    - The app is broken → product gap: report it to the user. Do not edit
      product code and do not change the map to match the bug.
-6. **Outcome.** Report exactly one:
+6. **Clean up, then report.** On every exit — `clean`, `changed`, or
+   `blocked` — run the skill's Cleanup after the last drive, then confirm the
+   evidence and logs are still at their paths. A recorded live instance would
+   make the next Launch refuse to start. Report exactly one outcome:
    - `clean` — every feature was covered from source and live; nothing to change.
    - `changed` — proven fixes to the skill or map, listed per feature.
    - `blocked` — coverage could not finish; say exactly what blocked it.
