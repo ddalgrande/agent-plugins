@@ -10,8 +10,9 @@ Based on Anthropic's [_Feedback loops: Help Claude Code complete ambitious tasks
 |---|---|---|
 | `setup-feedback-loop` | once per project | Auto-detects the stack, finds the real verify commands (matching CI), writes a reusable `docs/verification.md`, and adds a prose pointer to it in `AGENTS.md`/`CLAUDE.md`. |
 | `green-loop` | every change, before "done" | Runs the recorded checks, fixes failures, re-runs until green, then reports honestly. |
+| `setup-verify-app` | once per app, then when the app changes | Writes a project-local `verify-<app>` skill (Launch, Doctor, Drive, Evidence, Cleanup) plus a `features/` map of how to drive and prove each user-facing feature, and runs it once to prove it. Maintain mode re-checks every feature from source and live, and fixes drift in the map. `green-loop` uses `verify-<app>` for Layer 2 when it exists. |
 
-Both trigger automatically from context, or invoke by name.
+All three trigger automatically from context, or invoke by name.
 
 ## The loop
 
@@ -41,12 +42,12 @@ claude plugin install feedback-loops@ddalgrande-plugins
 ```
 
 Codex, Kimi, pi, or any other [Agent Skills](https://agentskills.io) agent — run
-`./install.sh` from a clone of this repo to put both skills in
-`~/.agents/skills/`. Both are portable; nothing in this plugin is
+`./install.sh` from a clone of this repo to put all three skills in
+`~/.agents/skills/`. All are portable; nothing in this plugin is
 Claude-specific. See the [root README](../../README.md#install) for details.
 
 ## Principles
 
 - **Honest over complete** — only records checks that actually run; never fakes a green.
 - **Match CI** — the loop mirrors what merge gates on.
-- **Surgical** — writes one file; doesn't reconfigure your project.
+- **Surgical** — each skill writes only the files it names (`docs/verification.md`, or the `verify-<app>` skill folder); none reconfigures your project.

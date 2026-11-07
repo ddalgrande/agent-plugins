@@ -12,7 +12,7 @@ not the model. There is one copy of each skill; nothing is forked per agent.
 
 | Plugin | Owns | Does |
 |---|---|---|
-| [feedback-loops](plugins/feedback-loops/) | **Code quality** ("is it correct?") | Encode your verification process as skills so the agent self-verifies. Skills: `setup-feedback-loop` (once per project — detects the stack, writes `docs/verification.md`), `green-loop` (every change — runs the recorded checks until green). Based on Anthropic's [_Feedback loops_](https://www.anthropic.com/engineering) post. |
+| [feedback-loops](plugins/feedback-loops/) | **Code quality** ("is it correct?") | Encode your verification process as skills so the agent self-verifies. Skills: `setup-feedback-loop` (once per project — detects the stack, writes `docs/verification.md`), `green-loop` (every change — runs the recorded checks until green), `setup-verify-app` (once per app — writes a project-local `verify-<app>` skill with a feature map for driving the real app). Based on Anthropic's [_Feedback loops_](https://www.anthropic.com/engineering) post. |
 | [ship](plugins/ship/) | **Delivery** ("is it delivered?") | Take a green change out the door. Skill: `ship` (`/ship`) — verify → feature branch → rebase → `/code-review` → push → PR → watch. Plus an opt-in, fail-open `Stop`-hook gate that refuses "done" while delivery is incomplete. |
 
 ## The split — one source of truth for checks
@@ -99,7 +99,7 @@ Nothing here is model-specific.
 
 | Piece | Claude Code | Codex / Kimi / pi / others |
 |---|---|---|
-| The three skills | ✅ | ✅ |
+| The four skills | ✅ | ✅ |
 | `docs/verification.md` contract | ✅ | ✅ — plain Markdown |
 | `ship-gate` Stop hook | ✅ | ❌ — hooks have no cross-agent equivalent |
 
@@ -127,10 +127,15 @@ plugins/feedback-loops/               # code-quality plugin
 ├── .claude-plugin/plugin.json
 ├── README.md
 └── skills/
-    ├── setup-feedback-loop/SKILL.md
-    └── green-loop/
+    ├── setup-feedback-loop/
+    │   ├── SKILL.md
+    │   └── references/review-template.md
+    ├── green-loop/
+    │   ├── SKILL.md
+    │   └── references/e2e-recipes.md
+    └── setup-verify-app/
         ├── SKILL.md
-        └── references/e2e-recipes.md
+        └── references/feature-map-template.md
 plugins/ship/                         # delivery plugin
 ├── .claude-plugin/plugin.json
 ├── README.md
