@@ -54,8 +54,9 @@ equivalent elsewhere — and if it has none, dispatch a subagent with a clean
 context and the diff. Address findings, and if you changed code in response,
 loop back to step 1 (re-verify) — a review fix is a change like any other.
 
-**Ask for findings you can act on.** Tell the reviewer (or brief the subagent)
-to:
+**Ask for findings you can act on.** Give the reviewer the repo's review
+guidance (`REVIEW.md`, if it exists) with the diff, and tell it (or brief the
+subagent) to:
 - tag each finding `Important`, `Nit`, or `Pre-existing` (a bug this diff did
   not introduce — record it, do not block this PR on it);
 - give file and line evidence for each finding, and a command or test that
@@ -153,6 +154,75 @@ resolve a thread you only partially addressed, and don't resolve someone else's
 thread without a reply. Delivery isn't done until every thread is either
 resolved or has an explicit, unresolved reason it can't be.
 
+## Stacked PRs
+A stack is a chain of PRs where each branch is cut from the branch below it
+and each PR targets that parent branch, not the base. Make a stack only when
+the user asks for one, or when the branch you ship already has a PR whose base
+is another feature branch. Every step above still applies to each PR; these
+rules change how:
+
+- **Branch (step 2).** Cut each new branch from its parent
+  (`git switch -c <child> <parent>`). Open its PR with the parent as base
+  (`gh pr create --base <parent>`, or your host's equivalent).
+- **Rebase (step 3).** Restack the whole chain in one go from the top branch:
+  `git switch <top> && git rebase --update-refs origin/<base>` (Git 2.38+;
+  it moves every branch in the stack). It does **not** move a branch that is
+  checked out in another worktree: check `git worktree list` first, and switch
+  that worktree off the branch or restack that branch with the fallback below.
+  Without `--update-refs`, rebase bottom
+  up. Before you rebase a parent, record its tip
+  (`old=$(git rev-parse <parent>)`). Then rebase each child onto its parent's
+  new tip with `git rebase --onto <parent> "$old" <child>`. Do not compute the
+  old tip after the parent moved — `git merge-base` then returns a commit
+  below the parent's commits, and the child replays them twice. Re-run Layer 1 on
+  each branch whose tree changed. Each PR merges as its own tree, so each must
+  be green on its own.
+- **Push (step 5).** A restack rewrites branches that are already pushed. Push
+  each one with `git push --force-with-lease --force-if-includes origin <branch>`
+  (Git 2.30+), never a bare `--force`. A plain `--force-with-lease` after
+  `git fetch` does not protect a collaborator's commits that the fetch pulled
+  in; `--force-if-includes` refuses the push unless your branch includes them.
+- **Review (steps 4 and 7).** Review each PR on its own diff only,
+  `git diff <parent>...<child>`, not the whole stack. The round cap and the
+  risk tier apply per PR, from that PR's own changed paths.
+- **Keep an agent review verdict across a restack.** When an agent review of
+  a PR ends, record the patch-id of its diff
+  (`git diff <parent>...<child> | git patch-id --verbatim`, Git 2.39+;
+  `--verbatim` keeps whitespace changes visible) in your reply on the PR.
+  After a restack, compute it again. If it is the same, the PR's diff did not
+  change and the agent review verdict still holds: do not start a new round,
+  and an automated PR reviewer that re-runs only because of that force-push
+  does not count toward the round cap. If it differs, re-review only what
+  changed. The reuse has limits:
+  - It covers agent reviews only. If the host dismissed a human approval on
+    the push, request that human review again.
+  - Layer 1 and Layer 2 test the whole tree, so they re-run whenever the tree
+    under the PR changed.
+- **PR body (step 6).** Add a **Stack** line: its position and its neighbours,
+  e.g. "2 of 3 — after #41, before #43".
+- **Merge bottom up.** Merge a PR only after the PR below it has merged. When
+  the bottom PR merges:
+  1. Retarget the next PR to the base (`gh pr edit <n> --base <base>`) before
+     anyone deletes the merged branch. On some hosts, deleting a PR's base
+     branch closes the PR.
+  2. Fetch the merge (`git fetch origin`). Until you do, `origin/<base>` does
+     not contain it, and a rebase onto it drops the merged work from the
+     child.
+  3. If the bottom PR was squash- or rebase-merged, the rest of the stack
+     still carries the parent's original commits. Drop them and restack every
+     remaining branch in one go, from the top branch:
+     `git switch <top> && git rebase --update-refs --onto origin/<base> <old-parent-tip>`,
+     where `<old-parent-tip>` is the merged parent's commit that the child is
+     built on. Record it before the merge (`git rev-parse <parent>`, with the
+     child up to date on the parent). Rebasing only the child leaves the
+     branches above it on the old history. The worktree caveat from the
+     rebase rule applies here too.
+  4. Re-run Layer 1 on each rewritten branch, then push each one with
+     `--force-with-lease --force-if-includes`.
+
+The Stop-hook gate below checks only the current branch. It does not know about
+the stack, so check the other PRs in the stack yourself.
+
 ## The Stop-hook gate (optional, opt-in, Claude Code only)
 This plugin also ships a `Stop` hook (`hooks/ship-gate.sh`) that enforces the
 *delivery* half deterministically: it refuses to let the session declare done
@@ -186,7 +256,8 @@ Set `"enabled": false` to turn it off without deleting the file.
 End with the delivery state the user can trust: branch, base it was rebased on,
 whether a re-verify ran (and why), review outcome (rounds used of the cap, and
 open findings by tag), risk tier, push status, and the PR URL + its CI state.
-Say plainly if anything is still red or needs manual follow-up.
+For a stack, give this per PR, in stack order, and say which PRs a restack
+rewrote and which review verdicts were kept by patch-id. Say plainly if anything is still red or needs manual follow-up.
 
 ## Composition
 - **feedback-loops → ship.** After `green-loop` reports green, hand off to

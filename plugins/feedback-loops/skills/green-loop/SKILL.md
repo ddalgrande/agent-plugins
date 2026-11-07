@@ -38,10 +38,13 @@ Unit tests passing ≠ the feature works. If the change is user-facing, run the 
 
 Use whichever MCP/tool the environment has (preference order in the recipes file); save artifacts to a temp dir, not the repo. If a leg can't run here (no device, external dependency), say so explicitly and list what the user must verify manually — don't silently claim it works.
 
+**Independent verdict for risky changes.** An author checks what it meant to build, not what it built. When the change is **medium or high** in the risk tiers of `docs/verification.md` — or, when no tiers exist, any change that is not only docs, copy, comments, or tests (agent instruction files such as `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, `REVIEW.md` are never low) — have an agent that did **not** write the code run the Layer 2 leg: dispatch a fresh-context subagent with the diff, the intent in one line, and the Layer 2 section. It reports `PASS`, `PASS+NOTES`, or `FAIL`, each with the commands it ran, their output, and the evidence paths. Your own Layer 2 run stays as a first pass; the independent verdict is the one you report. On `FAIL`, fix, re-run Layer 1, and dispatch a new subagent; apply the same ~3-attempt bound as Layer 1, then stop and ask. If your agent cannot dispatch a subagent, say so in the report and list the Layer 2 checks the user should repeat.
+
 ## 4. Layer 3 — pre-merge review (before PR/merge)
 When the change is headed for a PR or merge, get a **second pair of eyes from a separate agent**: run whatever review command your agent provides (`/code-review` or `/review` in Claude Code, `$code-review` in Codex, `/skill:code-review` in Kimi or pi), or failing that dispatch a subagent with a fresh context and the diff. What matters is that the reviewer did **not** write the code — a fresh-context reviewer catches what the author-context agent rationalized past. Address findings, then re-run Layer 1.
 
 Review loop rules (the `ship` skill applies the same rules in full):
+- Give the reviewer the repo's review guidance (`REVIEW.md`, if it exists) along with the diff. On a stacked branch (its PR targets another feature branch), "the diff" is against that parent branch (`git diff <parent>...HEAD`), not against the base — here and for the independent Layer 2 verdict.
 - Ask the reviewer to tag each finding `Important`, `Nit`, or `Pre-existing`, give file and line evidence, and drop style-only findings.
 - **Cap the rounds.** Use `max review rounds` from the Layer 3 section of `docs/verification.md`, or **3** if it is not set. After round 1, re-review only the new diff. At the cap, if `Important` findings remain, stop and ask the user whether the approach is wrong — do not start another round.
 

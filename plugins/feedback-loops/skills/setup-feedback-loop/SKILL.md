@@ -17,7 +17,8 @@ Run **once per project**. Goal: discover the checks that prove a change is corre
 This skill writes exactly **two** things: `docs/verification.md` and a short
 prose pointer in the project's **agent instructions file** — `AGENTS.md` (the
 cross-agent standard) or `CLAUDE.md`, whichever the repo already uses. That is
-the whole job.
+the whole job. The only exception is an optional `REVIEW.md` (step 5b), written
+only when the user says yes.
 
 It MUST NOT, as part of setup:
 - add or edit **hooks**, or touch agent settings (e.g. `.claude/settings.json`)
@@ -135,11 +136,19 @@ Rules:
 - **Respect repo git rules.** If the project forbids direct edits to its default branch (check the instructions file), make these changes on a branch + PR, not in place.
 - Keep the pointer to ~3 lines — the detail lives in `docs/verification.md`, not the instructions file.
 
+### 5b. Offer review guidance (`REVIEW.md`, optional)
+A reviewer agent — local (`/code-review` or a fresh-context subagent) or a PR bot — reviews better when the repo says what failure looks like *here*. If the repo has no review guidance file (`REVIEW.md`, or a review section in the instructions file or `docs/`), offer to write `REVIEW.md` at the repo root from `references/review-template.md` (relative to this skill). Write it only if the user says yes; otherwise skip this step and mention it in the hand-off.
+
+When you write it:
+- Fill every `<...>` from this repo — the failure modes come from what the code does (a calculator: "the number is wrong"; docs: "it lies"; config: "it misroutes"), the sensitive paths from the Layer 3 risk tiers. Leave no placeholder.
+- Keep it under ~40 lines. A reviewer loads it on every review.
+- If review guidance already exists, do not create a second file. Suggest the template's missing rules (finding tags, nit cap, evidence rule, count-first summary) as additions instead.
+
 ### 6. Hand off
 Tell the user it's recorded, the pointer is in place (name the file you edited), and that `green-loop` — or just the instructions-file pointer, for an agent without these skills installed — will run it. Suggest committing `docs/verification.md` and the pointer so future sessions and teammates inherit the same contract, whichever agent they use.
 
 ## Principles
 - **Honest over complete** — only record checks that actually run.
 - **Match CI** — the loop should mirror what merge gates on.
-- **Surgical** — write `docs/verification.md` + the pointer; nothing else. Do **not** add hooks, edit agent settings (e.g. `.claude/settings.json`), or install a Stop-hook gate (see *Scope*). Enforcement hooks are a separate, explicit opt-in.
+- **Surgical** — write `docs/verification.md` + the pointer (and `REVIEW.md` only on the user's yes); nothing else. Do **not** add hooks, edit agent settings (e.g. `.claude/settings.json`), or install a Stop-hook gate (see *Scope*). Enforcement hooks are a separate, explicit opt-in.
 - **Agent-neutral** — `docs/verification.md` is plain Markdown any agent can read. Write the commands, not the harness; don't assume the reader is Claude Code.
