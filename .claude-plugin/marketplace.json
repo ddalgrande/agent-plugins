@@ -13,7 +13,7 @@
       "name": "feedback-loops",
       "source": "./plugins/feedback-loops",
       "description": "Self-verification feedback loops: detect a project's checks once, then run run\u2192observe\u2192fix until green before declaring done.",
-      "version": "1.10.0",
+      "version": "1.10.1",
       "author": {
         "name": "Daniele Dal Grande"
       },
