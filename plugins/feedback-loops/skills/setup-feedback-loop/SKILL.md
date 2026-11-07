@@ -24,7 +24,9 @@ It MUST NOT, as part of setup:
 - add or edit **hooks**, or touch agent settings (e.g. `.claude/settings.json`)
 - install a **Stop-hook gate** (`green-loop-gate.sh` or any enforcement hook)
 - create a per-project skill — the `green-loop` skill already exists in this
-  plugin and is the runner; setup only writes the contract it reads
+  plugin and is the runner; setup only writes the contract it reads. (A
+  per-project `verify-<app>` skill for Layer 2 is a separate opt-in, written
+  by the `setup-verify-app` skill — see step 3.)
 
 **Optional, separate opt-in — an enforcement hook.** A Stop-hook that runs
 Layer 1 and blocks "done" until green is a heavier, deliberate choice
@@ -77,6 +79,8 @@ Unit tests alone don't prove a feature works. Record how to drive the **running*
 - **CLI** → the invocation that exercises the changed path.
 - **Mobile** → simulator boot + launch command (screen-record the flow for visual changes).
 
+If the repo already has a `verify-<app>` skill, point Layer 2 at it instead of restating its steps. If driving the app needs more than these few lines — seed data, auth, several entry points per feature, traps an agent would hit — say so in the hand-off and suggest the `setup-verify-app` skill, which writes a maintained `verify-<app>` skill with a feature map. Do not write that skill as part of this setup.
+
 ### 3b. Fill in the risk tiers
 Replace the `<...>` placeholders in the template's risk tiers with this repo's real paths: look for auth, payments/billing, secrets, database migrations, release/deploy/install scripts, and any path that CODEOWNERS or the instructions file marks as sensitive. CI workflow files are always **high**. Agent instruction files (`AGENTS.md`, `CLAUDE.md`, `**/SKILL.md`, review guidance such as `REVIEW.md`) are at least **medium** — they are instructions, not docs, so never put them under low. If nothing sensitive exists, keep only the `.github/workflows/**` line under high. Start strict — a path can move to a lower tier later, with evidence that the lower bar is safe.
 
@@ -100,6 +104,7 @@ Run via the `green-loop` skill. Keep in sync with CI.
 - exercise: <how to drive the real app and what to observe>
 - logs: <where service logs go — check for stack traces>
 - record: <video/trace for visually sensitive UI — review for jank/flicker/layout-shift; omit if N/A>
+- skill: <`verify-<app>` (feature map: `<skills>/verify-<app>/features/`) — omit if the repo has none>
 
 ## Layer 3 — pre-merge review (before PR/merge)
 - separate-agent review: `/code-review` (or `/review`)
